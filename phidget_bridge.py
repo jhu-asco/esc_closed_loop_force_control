@@ -2,15 +2,22 @@ from Phidget22.Devices.VoltageRatioInput import VoltageRatioInput
 from Phidget22.PhidgetException import PhidgetException
 from Phidget22.Phidget import ChannelSubclass
 
+# Wrapper class to read in force from Phidget Bridge through voltage ratios
 class PhidgetBridge:
 
     # Create constructor  
     def __init__(self, frequency = 20.0):
+        # Boolean to check the connectivity of the Phidge Bridge
         self.connected_status = False
+        # Scaling float to convert voltage ratios to force values
         self.force_scaling = 4631.579
+        # Conversion between mass and force        
         self.gravity = 9.81
+        # Force value in Newtons (N)        
         self.__force__ = 0
+        # Interval between data collection times due to frequency
         self.time_interval = int(1000.0/frequency)
+        # Calls function to begin analysis
         self.createVoltageRatioInput()
     
     # Function to call handlers    
@@ -24,6 +31,7 @@ class PhidgetBridge:
     # Function to wait for a connection to the PhidgetBridge    
     def waitingForConnection(self, timeout=5000): 
         print("Waiting for the Phidget VoltageRatioInput Object to be attached...")
+        # Timeout: time to wait for connection in milliseconds         
         self.ch.openWaitForAttachment(timeout)
         
     # Function for when the PhidgetBridge is attached
