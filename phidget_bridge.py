@@ -19,7 +19,7 @@ class PhidgetBridge:
         self.time_interval = int(1000.0/frequency)
         # Calls function to begin analysis
         self.createVoltageRatioInput()
-    
+
     # Function to call handlers    
     def createVoltageRatioInput(self):
         self.ch = VoltageRatioInput()
@@ -27,13 +27,13 @@ class PhidgetBridge:
         self.ch.setOnDetachHandler(self.voltageRatioInputDetached)
         self.ch.setOnErrorHandler(self.errorEvent)
         self.ch.setOnVoltageRatioChangeHandler(self.voltageRatioChangeHandler)
-    
+
     # Function to wait for a connection to the PhidgetBridge    
     def waitingForConnection(self, timeout=5000): 
         print("Waiting for the Phidget VoltageRatioInput Object to be attached...")
         # Timeout: time to wait for connection in milliseconds         
         self.ch.openWaitForAttachment(timeout)
-        
+
     # Function for when the PhidgetBridge is attached
     # Prints status/information on connection & begins sending data
     def voltageRatioInputAttached(self, e):
@@ -68,7 +68,7 @@ class PhidgetBridge:
             print("Phidget Exception %i: %s" % (e.code, e.details))
             print("Press Enter to Exit...\n")
             self.connected_status = False
-               
+
     # Function for detaching PhidgetBridge
     def voltageRatioInputDetached(self, e):
         detached = e
@@ -78,21 +78,19 @@ class PhidgetBridge:
         except PhidgetException as e:
             print("Phidget Exception %i: %s" % (e.code, e.details))
             print("Press Enter to Exit...\n")
-            
+
     # Function for errors 
     def errorEvent(self, e, eCode, description):
         print("Error %i : %s" % (eCode, description))
-    
+
     # Handler to calculate force from voltageRatio
     def voltageRatioChangeHandler(self, e, voltageRatio):  
         self.__force__ = self.force_scaling*voltageRatio*self.gravity
-   
+
     # Gets force from voltageRatioChangeHandler
     def getForce(self):
         return self.__force__
-    
+
     # Closes PhidgetBridge
     def close(self):
         self.ch.close()
-        
-        
