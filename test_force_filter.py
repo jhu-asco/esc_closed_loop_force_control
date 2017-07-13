@@ -7,21 +7,30 @@
 
 import time
 import numpy as np
+import argparse
+import matplotlib.pyplot as plt
 from phidget_bridge import PhidgetBridge
 from online_low_pass_filter import OnlineButterLowPassFilter
 from arduino_communication import ArduinoCommunication
-import matplotlib.pyplot as plt
 
+# Get arguments from commandline
+parser = argparse.ArgumentParser(description='Test arduino communication.')
+parser.add_argument('-p', '--port', type=str, help='Serial port', default='COM6')
+parser.add_argument('-c', '--cutoff', type=float,
+                    help='Cutoff frequency for filtering', default=3.0)
+parser.add_argument('--pwm', type=float,
+                    help='PWM percentage to send to motor', default=20.0)
+args = parser.parse_args()
 # Specifies the frequency at which the PhidgetBridge will take in data
 frequency = 50
 # Time interval between force data collection points
 time_off = 0.02
 # PWM percentage to send to motors
-percentage = 20
+percentage = args.pwm
 # For how much time to run the filtering
 tf = 5.0
 # Cutoff frequency for low pass filter
-cutoff = 3.0
+cutoff = args.cutoff
 # Calls class with a specified frequency
 phidget_bridge = PhidgetBridge(frequency)
 # Calls function to wait for connection
@@ -38,7 +47,7 @@ if not phidget_bridge.connected_status:
 
 # Connect arduino
 # Include arduino-related functions
-arduino_communication = ArduinoCommunication(port='/dev/ttyACM0')
+arduino_communication = ArduinoCommunication(port=args.port, baud_rate=115200)
 # Create a low pass filter
 low_pass_filter = OnlineButterLowPassFilter(cutoff, 1.0 / time_off)
 # Store filtered and unfiltered force lists

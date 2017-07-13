@@ -6,11 +6,16 @@
 from arduino_communication import ArduinoCommunication
 import numpy as np
 import time
+import argparse
 
+# Get arguments from commandline
+parser = argparse.ArgumentParser(description='Test arduino communication.')
+parser.add_argument('-p', '--port', type=str, help='Serial port', default='COM6')
+args = parser.parse_args()
 # Create a percentage array of motor values
 percentage_array = np.linspace(6, 25, 5)
 # Instantiate the class into main
-arduino_communication = ArduinoCommunication(port='/dev/ttyACM0', baud_rate=115200)
+arduino_communication = ArduinoCommunication(port=args.port, baud_rate=115200)
 # Send motor commands to the arduino and recieve voltage values
 for i in range(0, len(percentage_array), 1):
     percent = percentage_array[i]

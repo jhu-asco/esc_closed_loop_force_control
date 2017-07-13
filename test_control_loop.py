@@ -8,20 +8,35 @@
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 from phidget_bridge import PhidgetBridge
 from arduino_communication import ArduinoCommunication
 from control_loop import ControlLoop
 
+# Add argument parser to read arguments from command line
+parser = argparse.ArgumentParser(description='Test arduino communication.')
+parser.add_argument('-p', '--port', type=str, help='Serial port', default='COM6')
+parser.add_argument('-f', '--freq', type=float, help='Control and sample frequency',
+                    default=50)
+parser.add_argument('-t', type=float, help='Time to run control loop for',
+                    default=10)
+parser.add_argument('-c', '--cutoff', type=float,
+                    help='Cutoff frequency for sampling',
+                    default=10)
+parser.add_argument('-d', '--desired_force',  type=float,
+                    help='Desired force in N',
+                    default=2.0)
+args = parser.parse_args()
 # Specifies the frequency at which the PhidgetBridge will take in data
-frequency = 50
+frequency = args.freq
 # Time interval between force data collection points
 time_off = (1.0 / frequency)
 # For how much time to run the controller
-tf = 10.0
+tf = args.t
 # Cutoff frequency for low pass filter
-cutoff = 10.0
+cutoff = args.cutoff
 # Desired Force (N)
-desired_force = 2.0
+desired_force = args.desired_force
 # Calls class with a specified frequency
 phidget_bridge = PhidgetBridge(frequency)
 # Calls function to wait for connection
@@ -38,7 +53,8 @@ if not phidget_bridge.connected_status:
 
 # Connect arduino
 # Include arduino-related functions
-arduino_communication = ArduinoCommunication(port='/dev/ttyACM0', baud_rate=115200)
+arduino_communication = ArduinoCommunication(port=args.port,
+                                             baud_rate=115200)
 
 # Control Loop
 control_loop = ControlLoop(cutoff, frequency)

@@ -2,16 +2,28 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import argparse
 from multithreaded_getchar import MultiThreadedGetChar
 from phidget_bridge import PhidgetBridge
 from arduino_communication import ArduinoCommunication
 
+# Add arg parser to read relevant options
+parser = argparse.ArgumentParser(description='Collect steady state Force vs PWM data')
+parser.add_argument('-p', '--port', type=str, help='Serial port', default='COM6')
+parser.add_argument('-f', '--freq', type=float, help='Force sample frequency',
+                    default=50)
+parser.add_argument('-s', '--spin', type=float, help='Spin up delay for props',
+                    default=3)
+parser.add_argument('-t', '--timeon', type=float, help='Time to collect data',
+                    default=5)
+args = parser.parse_args()
+
 # Main to calculate thrust vs. pwm, voltage vs. pwm, and thrust vs. time to
 # determine a thrust curve for force control in quadcopters
 
-frequency = 50  # (Hz)
-spin_up_delay = 3  # delay time between motor PWM percentage change and collection of data
-time_on = 5  # (sec)
+frequency = args.freq  # (Hz)
+spin_up_delay = args.spin  # delay time between motor PWM percentage change and collection of data
+time_on = args.timeon  # (sec)
 PWM_percentage_list = range(6, 25, 4)  # Starting, Ending, Interval times
 avg_f_array = []  # Array for which the averaged forces are stored
 std_f_array = []  # Array for which the standard deviations of the forces are stored
@@ -23,7 +35,7 @@ plt.figure(1)
 # Include phidgetbridge-related functions
 phidget_bridge = PhidgetBridge(frequency)
 # Include arduino-related functions
-arduino_communication = ArduinoCommunication()
+arduino_communication = ArduinoCommunication(port=args.port, baud_rate=115200)
 
 # Checks to make sure the phidgetbridge is connected, and if not, exits program
 try:
