@@ -1,6 +1,13 @@
+# VoltageRatio from www.Phidgets.com
+# (URL): https://www.phidgets.com/?tier=3&catid=2&pcid=1&prodid=35#product_tab_4
+# under Resources and Code Samples
+
+# This example reads and prints voltage values from the Phidgetbridge 
+#connected to a load cell.
+
 import sys
 import struct
-import time
+import time 
 import serial
 import matplotlib.pyplot as plt
 from Phidget22.Devices.VoltageRatioInput import *
@@ -15,7 +22,6 @@ except RuntimeError as e:
     print("Press Enter to Exit...\n")
     readin = sys.stdin.read(1)
     exit(1)
-
 
 def VoltageRatioInputAttached(e):
     try:
@@ -37,28 +43,23 @@ def VoltageRatioInputAttached(e):
         print("Phidget Exception %i: %s" % (e.code, e.details))
         print("Press Enter to Exit...\n")
         readin = sys.stdin.read(1)
-        exit(1)
-
-
+        exit(1)   
+    
 def VoltageRatioInputDetached(e):
     detached = e
     try:
-        print("\nDetach event on Port %d Channel %d" %
-              (detached.getHubPort(), detached.getChannel()))
+        print("\nDetach event on Port %d Channel %d" % (detached.getHubPort(), detached.getChannel()))
     except PhidgetException as e:
         print("Phidget Exception %i: %s" % (e.code, e.details))
         print("Press Enter to Exit...\n")
         readin = sys.stdin.read(1)
         exit(1)
 
-
 def ErrorEvent(e, eCode, description):
     print("Error %i : %s" % (eCode, description))
 
-
-def VoltageRatioChangeHandler(e, voltageRatio):
+def VoltageRatioChangeHandler(e, voltageRatio):  
     print("Voltage Value: %f" % voltageRatio)
-
 
 def SensorChangeHandler(e, sensorValue, sensorUnit):
     print("Sensor Value: %f" % sensorValue)
@@ -72,15 +73,14 @@ try:
     ch.setOnSensorChangeHandler(SensorChangeHandler)
 
     # Please review the Phidget22 channel matching documentation for details on the device
-    # and class architecture of Phidget22, and how channels are matched to
-    # device features.
+    # and class architecture of Phidget22, and how channels are matched to device features.
 
     # Specifies the serial number of the device to attach to.
     # For VINT devices, this is the hub serial number.
     #
     # The default is any device.
     #
-    # ch.setDeviceSerialNumber(<YOUR DEVICE SERIAL NUMBER>)
+    # ch.setDeviceSerialNumber(<YOUR DEVICE SERIAL NUMBER>) 
 
     # For VINT devices, this specifies the port the VINT device must be plugged into.
     #
@@ -131,6 +131,7 @@ except PhidgetException as e:
     print("Phidget Exception %i: %s" % (e.code, e.details))
     print("Press Enter to Exit...\n")
     readin = sys.stdin.read(1)
-    exit(1)
+    exit(1) 
 print("Closed VoltageRatioInput device")
 exit(0)
+                     
