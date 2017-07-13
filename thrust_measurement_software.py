@@ -1,156 +1,138 @@
-import sys
-import struct
-import time 
-import serial
+import time
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from Phidget22.Devices.VoltageRatioInput import *
-from Phidget22.PhidgetException import *
-from Phidget22.Phidget import *
-from Phidget22.Net import *
 from multithreaded_getchar import MultiThreadedGetChar
+from phidget_bridge import PhidgetBridge
+from arduino_communication import ArduinoCommunication
 
-def VoltageRatioInputAttached(e):
-    try:
-    
-        attached = e
-        print("\nAttach Event Detected (Information Below)")
-        print("===========================================")
-        print("Library Version: %s" % attached.getLibraryVersion())
-        print("Serial Number: %d" % attached.getDeviceSerialNumber())
-        print("Channel: %d" % attached.getChannel())
-        print("Channel Class: %s" % attached.getChannelClass())
-        print("Channel Name: %s" % attached.getChannelName())
-        print("Device ID: %d" % attached.getDeviceID())
-        print("Device Version: %d" % attached.getDeviceVersion())
-        print("Device Name: %s" % attached.getDeviceName())
-        print("Device Class: %d" % attached.getDeviceClass())
-        print("\n")
+# Main to calculate thrust vs. pwm, voltage vs. pwm, and thrust vs. time to
+# determine a thrust curve for force control in quadcopters
 
-    except PhidgetException as e:
-        print("Phidget Exception %i: %s" % (e.code, e.details))
-        print("Press Enter to Exit...\n")
-        readin = sys.stdin.read(1)
-        exit(1)   
-    
-def VoltageRatioInputDetached(e):
-    detached = e
-    try:
-        print("\nDetach event on Port %d Channel %d" % (detached.getHubPort(), detached.getChannel()))
-    except PhidgetException as e:
-        print("Phidget Exception %i: %s" % (e.code, e.details))
-        print("Press Enter to Exit...\n")
-        readin = sys.stdin.read(1)
-        exit(1)
-
-def ErrorEvent(e, eCode, description):
-    print("Error %i : %s" % (eCode, description))
-
-def VoltageRatioChangeHandler(e, voltageRatio):  
-    global forceSum;    
-    global counter;
-    forceScaling = 4631.579
-    force = forceScaling*voltageRatio*9.81
-    forceSum += force
-    counter += 1
-
-def SensorChangeHandler(e, sensorValue, sensorUnit):
-    print("Sensor Value: %f" % sensorValue)
-    
-PWM_percentage_list = range(6, 81, 5)
-port = 'com6'
-baud_rate = 9600
-voltage_scale = (5.0/1023.0)*10.1
-j = 0
-total_battery =  0
-forceSum = 0
-counter = 0
-f_array = []
-p_array = []
-v_array = []
-
-arduino = serial.Serial(port, baud_rate)
-time.sleep(2)
-
+frequency = 50  # (Hz)
+spin_up_delay = 3  # delay time between motor PWM percentage change and collection of data
+time_on = 5  # (sec)
+PWM_percentage_list = range(6, 25, 4)  # Starting, Ending, Interval times
+avg_f_array = []  # Array for which the averaged forces are stored
+std_f_array = []  # Array for which the standard deviations of the forces are stored
+avg_v_array = []  # Array for which the averaged voltages are stored
+std_v_array = []  # Array for which the standard deviations of the voltages are stored
+p_array = []  # Array for whic the PWM's are stored
 plt.ion()
 plt.figure(1)
-with MultiThreadedGetChar() as getchar:
-    for i in range (0, len(PWM_percentage_list), 1):    
-        percentage = PWM_percentage_list[i]
-        p_array.append(percentage)
-        arduino.write(struct.pack('>B', percentage))
-        time.sleep(2)    
-        while j < 10:
-            data = arduino.read(2)
-            if data:
-                voltage = struct.unpack('<H', data)
-                battery = voltage[0]*voltage_scale
-                total_battery += battery
-                j += 1
-        try:
-            ch = VoltageRatioInput()
-        except RuntimeError as e:
-            print("Runtime Exception %s" % e.details)
-            print("Press Enter to Exit...\n")
-            readin = sys.stdin.read(1)
-            exit(1)
-        try:
-            ch.setOnAttachHandler(VoltageRatioInputAttached)
-            ch.setOnDetachHandler(VoltageRatioInputDetached)
-            ch.setOnErrorHandler(ErrorEvent)
-        
-            ch.setOnVoltageRatioChangeHandler(VoltageRatioChangeHandler)
-            ch.setOnSensorChangeHandler(SensorChangeHandler)
-    
-            print("Waiting for the Phidget VoltageRatioInput Object to be attached...")
-            ch.openWaitForAttachment(5000)
-        except PhidgetException as e:
-            print("Phidget Exception %i: %s" % (e.code, e.details))
-            print("Press Enter to Exit...\n")
-            readin = sys.stdin.read(1)
-            exit(1)
-        
-        if(ch.getChannelSubclass() == ChannelSubclass.PHIDCHSUBCLASS_VOLTAGERATIOINPUT_BRIDGE):
-            ch.setBridgeEnabled(1)
-        
-        print("Gathering data for 1 seconds...")
-        time.sleep(1)
-    
-        AvgVoltage = total_battery/j
-        AvgForce = forceSum/counter
-        f_array.append(AvgForce)
-        v_array.append(AvgVoltage)
-        print("The average voltage (V) is: %f" % (AvgVoltage))
-        print("The average force (N) is: %f" % (AvgForce))
-        
-        plt.plot(percentage,AvgForce,'b*')
-        
-        try:
-            ch.close()
-        except PhidgetException as e:
-            print("Phidget Exception %i: %s" % (e.code, e.details))
-            print("Press Enter to Exit...\n")
-            readin = sys.stdin.read(1)
-            exit(1)
-        plt.draw()
-        if getchar():
-            arduino.write(struct.pack('>B', 0))
-            break
-    arduino.write(struct.pack('>B',0))
-        
-arduino.write(struct.pack('>B', 0))
+# Include phidgetbridge-related functions
+phidget_bridge = PhidgetBridge(frequency)
+# Include arduino-related functions
+arduino_communication = ArduinoCommunication()
 
-plt.plot(p_array, f_array, 'ko-')
+# Checks to make sure the phidgetbridge is connected, and if not, exits program
+try:
+    phidget_bridge.waitingForConnection()
+except:
+    print "Phidget Bridge is not connected"
+    exit(0)
+if not phidget_bridge.connected_status:
+    print "Phidget Bridge is not connected"
+    exit(0)
+continue_looping = True
+
+# While no character is given, the loop will go through all PWM percentages and
+# output forces and voltages per time
+with MultiThreadedGetChar() as getchar:
+    for i in range(0, len(PWM_percentage_list), 1):
+        percentage = PWM_percentage_list[i]
+        # Sends percentage to arduino to run the motor
+        arduino_communication.sendMotorCommandToArduino(percentage)
+        local_f_array = []  # local array to store force values
+        local_v_array = []  # local array to store voltage values
+        time.sleep(spin_up_delay)  # sleeps to ensure spin up time
+        t_end = time.time() + time_on  # create end time variable from current time
+        while time.time() < t_end:
+            # Get force value from the load cell and add it to the local force
+            # array
+            local_f_array.append(phidget_bridge.getForce())
+            # Get voltage value from the arduino and add it to the local
+            # voltage array
+            local_v_array.append(arduino_communication.getVoltageFromArduino())
+            # If a characer is given, discontinue the loop and bring the motor
+            # to 0 PWM
+            if getchar():
+                continue_looping = False
+                arduino_communication.sendMotorCommandToArduino(0)
+                break
+            # sleep for a certain amount of time based on the given frequency
+            time.sleep(1.0 / frequency)
+        # If a character was given, discountinue the outerloop as well
+        if not continue_looping:
+            break
+        # take current percentage and append to p_array
+        p_array.append(percentage)
+        # create an array from the local_f_array using numpy
+        local_f_np_array = np.array(local_f_array)
+        # create an array from the local_v_array using numpy
+        local_v_np_array = np.array(local_v_array)
+        # take the average of the local force array and store in the averaged
+        # array
+        avg_f_array.append(np.mean(local_f_np_array))
+        # take the average of the local std force array and store in the
+        # averaged array
+        std_f_array.append(np.std(local_f_np_array))
+        # take the average of the local voltage array and store in the averaged
+        # array
+        avg_v_array.append(np.mean(local_v_np_array))
+        # take the average of the local std voltage array and store in the
+        # averaged array
+        std_v_array.append(np.std(local_v_np_array))
+        # Creates two plots of all of the local force and voltage measurements
+        plt.figure(1)
+        plt.subplot(2, 1, 1)
+        plt.plot(local_f_np_array)
+        plt.subplot(2, 1, 2)
+        plt.plot(local_v_np_array)
+        plt.draw()
+        # Prints to console the PWM, average force, and average voltage
+        print "Current PWM: %f" % percentage
+        print "Force - Mean: %f, Stdev: %f" % (avg_f_array[-1], std_f_array[-1])
+        print "Voltage - Mean: %f, Stdev: %f" % (avg_v_array[-1], np.std(local_v_np_array))
+        # Plots the average force vs. PWM
+        plt.figure(2)
+        plt.plot(p_array, avg_f_array, 'b*')
+        plt.draw()
+    # Turns the motor to 0 PWM
+    arduino_communication.sendMotorCommandToArduino(0)
+
+# If no percentage array is present, exit program
+if not p_array:
+    print "No data to plot"
+    exit(0)
+
+# PLots the thrust curve measurement vs. PWM percentages
+plt.figure(3)
+plt.errorbar(p_array, avg_f_array, yerr=std_f_array, fmt='ko-')
 plt.title('Thrust Curve Measurement')
 plt.xlabel('PWM percentage (%)')
 plt.ylabel('Force (N)')
 
-outfile = file('force_vs_pwm',mode='w+')
+# Plots the battery voltage measurements vs. PWM percentages
+plt.figure(4)
+plt.errorbar(p_array, avg_v_array, yerr=std_v_array, fmt='ko-')
+plt.title('Battery Voltage Measurement')
+plt.xlabel('PWM percentage (%)')
+plt.ylabel('Voltage (V)')
+
+# Writes the PWM percentages, averaged forces, STD of the forces,
+# averaged voltages, and STD of the voltages to a file
+outfile = file('force_vs_pwm', mode='w+')
 print>>outfile, p_array
-print>>outfile, f_array
+print>>outfile, avg_f_array
+print>>outfile, std_f_array
+print>>outfile, avg_v_array
+print>>outfile, std_v_array
 outfile.close()
 
-arduino.close()
+# Close the arduino and phidgetbridge connections
+arduino_communication.closeArduino()
+phidget_bridge.close()
 print("Finished Calculating Measurements")
-plt.show(block = True)
+plt.show(block=True)
 exit(0)
