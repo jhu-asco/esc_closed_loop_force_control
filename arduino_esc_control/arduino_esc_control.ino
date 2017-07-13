@@ -6,7 +6,6 @@ int voltagePin = A13; //voltage sensor connected to pin 13 on Arduino
 int speed; // indicates the duty cycle value (between 0 and 255)
 int percentage; // indicates the percent of the duty cycle desired (should be between 0 and 30%)
 double current; // current value
-//double voltage; // volage value
 int header;
 int MOTOR_ID = 1;
 int VOLTAGE_ID = 2;
@@ -21,10 +20,8 @@ SimpleTimer serial_timer;
 
 void setup() {
   pinMode(motorPin, OUTPUT);
-  //pinMode(currentPin, INPUT);
   pinMode(voltagePin, INPUT);
   Serial.begin(baud_rate);
-  //Serial.println("Enter a duty cycle percentage: ");
   percentage = 0;
   speed = PWMscaling * percentage + minPWM;
   analogWrite(motorPin, speed);
