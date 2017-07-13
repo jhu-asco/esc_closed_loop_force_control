@@ -1,3 +1,10 @@
+# VoltageRatio from www.Phidgets.com
+# (URL): https://www.phidgets.com/?tier=3&catid=2&pcid=1&prodid=35#product_tab_4
+# under Resources and Code Samples
+
+# This example reads and prints voltage values from the Phidgetbridge 
+#connected to a load cell.
+
 import sys
 import struct
 import time 

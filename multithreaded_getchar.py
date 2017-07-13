@@ -9,17 +9,19 @@ import sys
 import threading
 import time
 
+
 class MultiThreadedGetChar:
+
     def __init__(self):
         self.__output__ = ''
         self.t = threading.Thread(name='Child', target=self.readInput)
         self.__lock__ = threading.Lock()
         self.__exit_condition__ = False
-    
+
     def __enter__(self):
         self.t.start()
         return self
-    
+
     def readInput(self):
         exit_condition = False
         while not exit_condition:
@@ -32,13 +34,13 @@ class MultiThreadedGetChar:
             self.__output__ = val
             exit_condition = self.__exit_condition__
             self.__lock__.release()
-    
+
     def __call__(self):
         self.__lock__.acquire()
         val = self.__output__
         self.__lock__.release()
         return val
-    
+
     def __exit__(self, *args):
         print "Exiting Thread! Press any key to continue"
         self.__lock__.acquire()
@@ -46,7 +48,7 @@ class MultiThreadedGetChar:
         self.__lock__.release()
         self.t.join()
 
-## Test code
+# Test code
 if __name__ == "__main__":
     with MultiThreadedGetChar() as readIn:
         out = ''
