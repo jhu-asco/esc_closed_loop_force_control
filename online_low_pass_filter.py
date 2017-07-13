@@ -10,8 +10,23 @@ from scipy.signal import butter
 from ring_buffer import RingBuffer
 import numpy as np
 
+
 class OnlineButterLowPassFilter:
+    """
+    Online version of low pass filter
+    """
+
     def __init__(self, cutoff, frequency, order=6):
+        """
+        Initialize a butterworth filter with specified
+        parameters.
+        Parameters:
+        cutoff -- Filter cutoff frequency in Hz
+        frequency -- Sampling frequency. How quickly filterValue
+                     will be called
+        order  -- The order of the butterworth filter. Higher order,
+                  steeper the slope of frequency response
+        """
         nyq = 0.5 * frequency  # Nyqst frequency
         normal_cutoff = cutoff / nyq  # Normalized cutoff
         # Butterworth low pass filter
@@ -22,8 +37,16 @@ class OnlineButterLowPassFilter:
         self.unfiltered_buffer = RingBuffer(self.b.size)
 
     def filterValue(self, input_data):
-       self.unfiltered_buffer.add_element(input_data)
-       yfilt = (np.sum(self.unfiltered_buffer.get_array()*self.b[::-1]) -
-                np.sum(self.filtered_buffer.get_array()*self.a[:0:-1]))
-       self.filtered_buffer.add_element(yfilt)
-       return yfilt
+        """
+        Filter an input data and return the filtered value. This function
+        should be called at the specified sampling frequency in constructor.
+        Parameters:
+        input_data -- Unfiltered input
+
+        Returns: Filtered data
+        """
+        self.unfiltered_buffer.add_element(input_data)
+        yfilt = (np.sum(self.unfiltered_buffer.get_array() * self.b[::-1]) -
+                 np.sum(self.filtered_buffer.get_array() * self.a[:0:-1]))
+        self.filtered_buffer.add_element(yfilt)
+        return yfilt

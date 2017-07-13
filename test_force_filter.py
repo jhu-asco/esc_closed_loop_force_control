@@ -25,7 +25,7 @@ cutoff = 3.0
 # Calls class with a specified frequency
 phidget_bridge = PhidgetBridge(frequency)
 # Calls function to wait for connection
-phidget_bridge.waitingForConnection(timeout = 5000)
+phidget_bridge.waitingForConnection(timeout=5000)
 # Checks if the Phidget Bridge is connected; if not, exits program
 try:
     phidget_bridge.waitingForConnection()
@@ -37,9 +37,10 @@ if not phidget_bridge.connected_status:
     exit(0)
 
 # Connect arduino
-arduino_communication = ArduinoCommunication() # Include arduino-related functions
+# Include arduino-related functions
+arduino_communication = ArduinoCommunication()
 # Create a low pass filter
-low_pass_filter = OnlineButterLowPassFilter(cutoff, 1.0/time_off)
+low_pass_filter = OnlineButterLowPassFilter(cutoff, 1.0 / time_off)
 # Store filtered and unfiltered force lists
 unfiltered_force = []
 filtered_force = []
@@ -49,7 +50,8 @@ try:
     # Iterating for tf seconds, filters and stores force
     while (time.time() - t_init) < tf:
         unfiltered_force.append(phidget_bridge.getForce())
-        filtered_force.append(low_pass_filter.filterValue(unfiltered_force[-1]))
+        filtered_force.append(
+            low_pass_filter.filterValue(unfiltered_force[-1]))
         time.sleep(time_off)
 finally:
     arduino_communication.sendMotorCommandToArduino(0)
@@ -58,12 +60,11 @@ phidget_bridge.close()
 # Plot filtered and unfilt force
 plt.ion()
 plt.figure(1)
-ts = np.arange(filtered_force.size)*time_off
+ts = np.arange(filtered_force.size) * time_off
 plt.plot(ts, filtered_force, 'b')
-plt.plot(ts, unfiltered_force,'r')
+plt.plot(ts, unfiltered_force, 'r')
 plt.xlabel('Time(sec)')
 plt.ylabel('Force(N)')
 plt.legend('Filtered force', 'Unfiltered force')
 # Wait for plot to be closed
 plt.show(block=True)
-

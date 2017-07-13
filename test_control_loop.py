@@ -15,7 +15,7 @@ from control_loop import ControlLoop
 # Specifies the frequency at which the PhidgetBridge will take in data
 frequency = 50
 # Time interval between force data collection points
-time_off = (1.0/frequency)
+time_off = (1.0 / frequency)
 # For how much time to run the controller
 tf = 2.0
 # Cutoff frequency for low pass filter
@@ -25,7 +25,7 @@ desired_force = 1
 # Calls class with a specified frequency
 phidget_bridge = PhidgetBridge(frequency)
 # Calls function to wait for connection
-phidget_bridge.waitingForConnection(timeout = 5000)
+phidget_bridge.waitingForConnection(timeout=5000)
 # Checks if the Phidget Bridge is connected; if not, exits program
 try:
     phidget_bridge.waitingForConnection()
@@ -37,7 +37,8 @@ if not phidget_bridge.connected_status:
     exit(0)
 
 # Connect arduino
-arduino_communication = ArduinoCommunication() # Include arduino-related functions
+# Include arduino-related functions
+arduino_communication = ArduinoCommunication()
 
 # Control Loop
 control_loop = ControlLoop(cutoff, frequency)
@@ -67,10 +68,10 @@ phidget_bridge.close()
 # Plot filtered and unfilt force and desired force
 plt.ion()
 plt.figure(1)
-ts = np.arange(filtered_force.size)*time_off
+ts = np.arange(filtered_force.size) * time_off
 plt.plot(ts, filtered_force, 'b')
-plt.plot(ts, unfiltered_force,'r')
-plt.plot([ts[0], ts[-1]], [desired_force, desired_force],'m--')
+plt.plot(ts, unfiltered_force, 'r')
+plt.plot([ts[0], ts[-1]], [desired_force, desired_force], 'm--')
 plt.xlabel('Time(sec)')
 plt.ylabel('Force(N)')
 plt.legend('Filtered force', 'Unfiltered force', 'Desired Force')
@@ -80,4 +81,3 @@ plt.xlabel('Time(sec)')
 plt.ylabel('Commanded PWM(%)')
 # Wait for plot to be closed
 plt.show(block=True)
-

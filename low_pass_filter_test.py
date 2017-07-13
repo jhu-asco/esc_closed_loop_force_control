@@ -43,8 +43,6 @@ plt.grid()
 # First make some data to be filtered.
 data = genfromtxt('local_force_vs_pwm_40_percent.txt', delimiter=',')
 t = np.arange(data.size)*(1.0/fs)
-# "Noisy" data.  We want to recover the 1.2 Hz signal from this.
-#data = np.sin(1.2*2*np.pi*t) + 1.5*np.cos(9*2*np.pi*t) + 0.5*np.sin(12.0*2*np.pi*t)
 
 # Filter the data, and plot both the original and filtered signals.
 y = butter_lowpass_filter(data, cutoff, fs, order)
