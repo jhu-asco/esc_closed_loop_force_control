@@ -1,4 +1,4 @@
-#Test for the Ardufly/pilot/Mega: Sending PWM signals and recieving battery voltage values
+# Test for the Ardufly/pilot/Mega: Sending PWM signals and recieving battery voltage values
 # Written by: Joseph Chung under ASCOL
 # Email: jchung55@jhu.edu
 # Date: 7/11/17
@@ -11,7 +11,7 @@ import time
 percentage_array = np.linspace(6, 55, 5)
 # Instantiate the class into main
 arduino_communication = ArduinoCommunication()
-# Send motor commands to the arduino and recieve voltage values 
+# Send motor commands to the arduino and recieve voltage values
 for i in range(0, len(percentage_array), 1):
     percent = percentage_array[i]
     arduino_communication.sendMotorCommandToArduino(percent)
