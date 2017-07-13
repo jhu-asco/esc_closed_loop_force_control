@@ -3,24 +3,26 @@ from Phidget22.PhidgetException import PhidgetException
 from Phidget22.Phidget import ChannelSubclass
 
 # Wrapper class to read in force from Phidget Bridge through voltage ratios
+
+
 class PhidgetBridge:
 
-    # Create constructor  
-    def __init__(self, frequency = 20.0):
+    # Create constructor
+    def __init__(self, frequency=20.0):
         # Boolean to check the connectivity of the Phidge Bridge
         self.connected_status = False
         # Scaling float to convert voltage ratios to force values
         self.force_scaling = 4631.579
-        # Conversion between mass and force        
+        # Conversion between mass and force
         self.gravity = 9.81
-        # Force value in Newtons (N)        
+        # Force value in Newtons (N)
         self.__force__ = 0
         # Interval between data collection times due to frequency
-        self.time_interval = int(1000.0/frequency)
+        self.time_interval = int(1000.0 / frequency)
         # Calls function to begin analysis
         self.createVoltageRatioInput()
 
-    # Function to call handlers    
+    # Function to call handlers
     def createVoltageRatioInput(self):
         self.ch = VoltageRatioInput()
         self.ch.setOnAttachHandler(self.voltageRatioInputAttached)
@@ -28,10 +30,11 @@ class PhidgetBridge:
         self.ch.setOnErrorHandler(self.errorEvent)
         self.ch.setOnVoltageRatioChangeHandler(self.voltageRatioChangeHandler)
 
-    # Function to wait for a connection to the PhidgetBridge    
-    def waitingForConnection(self, timeout=5000): 
-        print("Waiting for the Phidget VoltageRatioInput Object to be attached...")
-        # Timeout: time to wait for connection in milliseconds         
+    # Function to wait for a connection to the PhidgetBridge
+    def waitingForConnection(self, timeout=5000):
+        print("Waiting for the Phidget VoltageRatioInput "
+              "Object to be attached...")
+        # Timeout: time to wait for connection in milliseconds
         self.ch.openWaitForAttachment(timeout)
 
     # Function for when the PhidgetBridge is attached
@@ -52,18 +55,18 @@ class PhidgetBridge:
             print("Device Class: %d" % attached.getDeviceClass())
             print("\n")
             self.connected_status = True
-            # Begins sending the data at the interval specified by frequency            
-            if(self.ch.getChannelSubclass() == 
-                ChannelSubclass.PHIDCHSUBCLASS_VOLTAGERATIOINPUT_BRIDGE):
-                    self.ch.setBridgeEnabled(1)
-                    if self.time_interval < self.ch.getMinDataInterval():
-                        print "Time interval is too low: %i" % self.time_interval
-                        self.time_interval = self.ch.getMinDataInterval()
-                    elif self.time_interval > self.ch.getMaxDataInterval():
-                        print "Time interval is too high: %i" % self.time_interval
-                        self.time_interval = self.ch.getMaxDataInterval()
-                    self.ch.setDataInterval(self.time_interval)
-                    self.ch.setVoltageRatioChangeTrigger(0.0)
+            # Begins sending the data at the interval specified by frequency
+            if(self.ch.getChannelSubclass() ==
+                    ChannelSubclass.PHIDCHSUBCLASS_VOLTAGERATIOINPUT_BRIDGE):
+                self.ch.setBridgeEnabled(1)
+                if self.time_interval < self.ch.getMinDataInterval():
+                    print "Time interval is too low: %i" % self.time_interval
+                    self.time_interval = self.ch.getMinDataInterval()
+                elif self.time_interval > self.ch.getMaxDataInterval():
+                    print "Time interval is too high: %i" % self.time_interval
+                    self.time_interval = self.ch.getMaxDataInterval()
+                self.ch.setDataInterval(self.time_interval)
+                self.ch.setVoltageRatioChangeTrigger(0.0)
         except PhidgetException as e:
             print("Phidget Exception %i: %s" % (e.code, e.details))
             print("Press Enter to Exit...\n")
@@ -74,18 +77,19 @@ class PhidgetBridge:
         detached = e
         self.connected_status = False
         try:
-            print("\nDetach event on Port %d Channel %d" % (detached.getHubPort(), detached.getChannel()))
+            print("\nDetach event on Port %d Channel %d" %
+                  (detached.getHubPort(), detached.getChannel()))
         except PhidgetException as e:
             print("Phidget Exception %i: %s" % (e.code, e.details))
             print("Press Enter to Exit...\n")
 
-    # Function for errors 
+    # Function for errors
     def errorEvent(self, e, eCode, description):
         print("Error %i : %s" % (eCode, description))
 
     # Handler to calculate force from voltageRatio
-    def voltageRatioChangeHandler(self, e, voltageRatio):  
-        self.__force__ = self.force_scaling*voltageRatio*self.gravity
+    def voltageRatioChangeHandler(self, e, voltageRatio):
+        self.__force__ = self.force_scaling * voltageRatio * self.gravity
 
     # Gets force from voltageRatioChangeHandler
     def getForce(self):

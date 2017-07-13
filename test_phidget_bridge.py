@@ -13,10 +13,10 @@ time_off = 0.1
 # Calls class with a specified frequency
 phidget_bridge = PhidgetBridge(frequency)
 # Calls function to wait for connection
-phidget_bridge.waitingForConnection(timeout = 5000)
+phidget_bridge.waitingForConnection(timeout=5000)
 # Checks if the Phidget Bridge is connected; if not, exits program
 try:
-    phidget_bridge.waitingForConnection() 
+    phidget_bridge.waitingForConnection()
 except:
     print "Phidget Bridge is not connected"
     exit(0)
@@ -27,6 +27,5 @@ if not phidget_bridge.connected_status:
 for i in range(10):
     print(phidget_bridge.getForce())
     time.sleep(time_off)
-    i += 1
 # Closes the PhidgetBridge connection
 phidget_bridge.close()
