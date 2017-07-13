@@ -61,8 +61,10 @@ PWM_percentage_list = range(6, 81, 5)
 port = 'com6'
 baud_rate = 9600
 voltage_scale = (5.0/1023.0)*10.1
-j = total_battery =  0
-forceSum = counter = 0
+j = 0
+total_battery =  0
+forceSum = 0
+counter = 0
 f_array = []
 p_array = []
 v_array = []
