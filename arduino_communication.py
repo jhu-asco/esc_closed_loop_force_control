@@ -18,7 +18,11 @@ class ArduinoCommunication:
         self.VOLTAGE_ID = 2
         # Connects with arduino
         self.arduino = serial.Serial(port, baud_rate)
-        time.sleep(timeout)
+        t0 = time.time()
+        while ((not self.arduino.isOpen()) and ((time.time() - t0)< timeout)):
+            pass
+        if not self.arduino.isOpen():
+            raise RuntimeError("Serial port not open")
 
     # Sends PWM percentages to the Arduino
     def sendMotorCommandToArduino(self, percentage=0):

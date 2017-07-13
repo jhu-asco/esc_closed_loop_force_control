@@ -13,7 +13,7 @@ class FirstOrderFeedbackController:
     First order P Controller
     """
 
-    def __init__(self, force_pwm_gain=1, user_pwm_gain=1):
+    def __init__(self, user_pwm_gain=1, force_pwm_gain=1):
         """
         Constructor. Creates initial settings
 

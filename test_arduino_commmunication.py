@@ -8,9 +8,9 @@ import numpy as np
 import time
 
 # Create a percentage array of motor values
-percentage_array = np.linspace(6, 55, 5)
+percentage_array = np.linspace(6, 25, 5)
 # Instantiate the class into main
-arduino_communication = ArduinoCommunication()
+arduino_communication = ArduinoCommunication(port='/dev/ttyACM0', baud_rate=115200)
 # Send motor commands to the arduino and recieve voltage values
 for i in range(0, len(percentage_array), 1):
     percent = percentage_array[i]

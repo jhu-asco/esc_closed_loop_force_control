@@ -38,13 +38,14 @@ if not phidget_bridge.connected_status:
 
 # Connect arduino
 # Include arduino-related functions
-arduino_communication = ArduinoCommunication()
+arduino_communication = ArduinoCommunication(port='/dev/ttyACM0')
 # Create a low pass filter
 low_pass_filter = OnlineButterLowPassFilter(cutoff, 1.0 / time_off)
 # Store filtered and unfiltered force lists
 unfiltered_force = []
 filtered_force = []
 try:
+    print "Sending Motor PWM"
     arduino_communication.sendMotorCommandToArduino(percentage)
     t_init = time.time()
     # Iterating for tf seconds, filters and stores force
@@ -54,17 +55,19 @@ try:
             low_pass_filter.filterValue(unfiltered_force[-1]))
         time.sleep(time_off)
 finally:
+    print "Sending 0 PWM"
     arduino_communication.sendMotorCommandToArduino(0)
 # Closes the PhidgetBridge connection
 phidget_bridge.close()
 # Plot filtered and unfilt force
 plt.ion()
 plt.figure(1)
-ts = np.arange(filtered_force.size) * time_off
-plt.plot(ts, filtered_force, 'b')
+filtered_force_array = np.array(filtered_force)
+ts = np.arange(filtered_force_array.size) * time_off
+plt.plot(ts, filtered_force_array, 'b')
 plt.plot(ts, unfiltered_force, 'r')
 plt.xlabel('Time(sec)')
 plt.ylabel('Force(N)')
-plt.legend('Filtered force', 'Unfiltered force')
+plt.legend(['Filtered force', 'Unfiltered force'])
 # Wait for plot to be closed
 plt.show(block=True)
