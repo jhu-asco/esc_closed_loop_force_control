@@ -41,7 +41,7 @@ class FirstOrderFeedbackController:
         """
         self.force_pwm_gain = max(force_pwm_gain, 0.01)
 
-    def control(self, desired_force, estimated_force):
+    def control(self, desired_force, estimated_force, desired_force_derivative=0):
         """
         Control loop to compute the pwm(%) to send to motors
         to acheive a desired force.
@@ -52,5 +52,8 @@ class FirstOrderFeedbackController:
         Returns: The derivative of pwm(%) to send to motors
         """
         error = (estimated_force - desired_force)
-        pwm_out = -(self.user_pwm_gain / self.force_pwm_gain) * (error)
+        feedforward_derivative = desired_force_derivative/self.force_pwm_gain
+        feedback_derivative = -(self.user_pwm_gain /
+                                self.force_pwm_gain) * (error)
+        pwm_out = feedback_derivative + feedforward_derivative
         return pwm_out
