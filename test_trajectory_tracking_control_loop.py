@@ -99,6 +99,14 @@ finally:
     arduino_communication.sendMotorCommandToArduino(0)
 # Closes the PhidgetBridge connection
 phidget_bridge.close()
+# Save data to a file
+timestr = time.strftime("%Y%m%d-%H%M%S")
+data_to_save = np.array([desired_force, unfiltered_force, filtered_force,
+                         commanded_pwm])
+data_to_save = data_to_save.transpose()
+np.savetxt('data_'+timestr+'.txt', data_to_save, fmt='%2.3f',
+           header=('Desired_Force, Unfiltered_Force, ' +
+                   'Filtered_Force, CommandedPWM'))
 # Plot filtered and unfilt force and desired force
 plt.ion()
 plt.figure(1)
@@ -110,9 +118,13 @@ plt.plot(ts, desired_force, 'm--')
 plt.xlabel('Time(sec)')
 plt.ylabel('Force(N)')
 plt.legend(['Filtered force', 'Unfiltered force', 'Desired Force'])
+plt.draw()
+plt.savefig('force_data.png', bbox_inches='tight')
 plt.figure(2)
 plt.plot(ts, commanded_pwm, 'b')
 plt.xlabel('Time(sec)')
 plt.ylabel('Commanded PWM(%)')
+plt.draw()
+plt.savefig('commanded_pwm.png', bbox_inches='tight')
 # Wait for plot to be closed
 plt.show(block=True)

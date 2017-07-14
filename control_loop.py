@@ -16,7 +16,7 @@ class ControlLoop:
         frequency -- Sampling frequency for force
         """
         self.force_filter = OnlineButterLowPassFilter(cutoff, frequency)
-        self.feedback_controller = FirstOrderFeedbackController(user_pwm_gain=3)
+        self.feedback_controller = FirstOrderFeedbackController(user_pwm_gain=2)
         # For now not implemented adaptive gain estimator
         self.min_pwm = 6 # Enough to keep the motors moving
         self.pwm = self.min_pwm  # Start with minimal PWM percentage
@@ -40,7 +40,7 @@ class ControlLoop:
         runs the control loop, integrates and outputs the
         pwm(%) to send to motors
         """
-        if force > 10.0 or force < -10:
+        if force > 15.0 or force < -10:
             print "Warning crazy force reported: %2.3f !"%(force,)
             return
         self.filtered_force = self.force_filter.filterValue(force)

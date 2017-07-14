@@ -19,6 +19,7 @@ class ArduinoCommunication:
         # Connects with arduino
         self.arduino = serial.Serial(port, baud_rate)
         t0 = time.time()
+        time.sleep(2)
         while ((not self.arduino.isOpen()) and ((time.time() - t0)< timeout)):
             pass
         if not self.arduino.isOpen():
