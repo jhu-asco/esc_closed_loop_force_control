@@ -18,6 +18,7 @@ class ArduinoCommunication:
         self.VOLTAGE_ID = 2
         # Connects with arduino
         self.arduino = serial.Serial(port, baud_rate)
+        time.sleep(2)
         t0 = time.time()
         while ((not self.arduino.isOpen()) and ((time.time() - t0)< timeout)):
             pass
