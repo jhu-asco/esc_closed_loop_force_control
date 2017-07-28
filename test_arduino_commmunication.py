@@ -13,14 +13,16 @@ parser = argparse.ArgumentParser(description='Test arduino communication.')
 parser.add_argument('-p', '--port', type=str, help='Serial port', default='COM6')
 args = parser.parse_args()
 # Create a percentage array of motor values
-percentage_array = np.linspace(6, 25, 5)
+percentage_array = np.linspace(6, 6, 5)
 # Instantiate the class into main
 arduino_communication = ArduinoCommunication(port=args.port, baud_rate=115200)
 # Send motor commands to the arduino and recieve voltage values
 for i in range(0, len(percentage_array), 1):
     percent = percentage_array[i]
+    print percent
     arduino_communication.sendMotorCommandToArduino(percent)
     time.sleep(2)
+    print "done sleeping"
     print(arduino_communication.getVoltageFromArduino())
 # Reset the motor to zero (0) after all trials are done
 arduino_communication.sendMotorCommandToArduino(0)
