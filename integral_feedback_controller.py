@@ -2,34 +2,39 @@
 """
 Created on Wed Jul 12 20:46:52 2017
 
-Feedback controller to udate force based on PWM
+Integral Feedback controller to update force based on PWM
 
 @author: gowtham
 """
 
+import numpy as np
 
-class FirstOrderFeedbackController:
+class IntegralFeedbackController:
     """
     First order P Controller
     """
 
-    def __init__(self, user_pwm_gain=1, force_pwm_gain=1):
+    def __init__(self, max_pwm_change, dt, integral_pwm_gain=1, force_pwm_gain=1):
         """
         Constructor. Creates initial settings
 
         Parameters:
         force_pwm_gain -- The slope of steady state force vs pwm(%)
                           curve.
-        user_pwm_gain  -- The user specified gain on how quickly the
+        integral_pwm_gain  -- The user specified gain on how quickly the
                           force should converge to the desired force
         """
         # Check inputs are ok
         assert(force_pwm_gain > 0.01)
-        assert(user_pwm_gain > 0)
+        assert(integral_pwm_gain > 0)
         # Feedforward gain between force and pwm
         self.force_pwm_gain = force_pwm_gain
         # How fast the user wants the force to reach desired force
-        self.user_pwm_gain = user_pwm_gain
+        self.integral_pwm_gain = integral_pwm_gain
+        # Initializes the integral value as zero
+        self.integral_out = 0
+        self.max_pwm_change = max_pwm_change        
+        self.dt = dt        
 
     def setForcePWMGain(self, force_pwm_gain):
         """
@@ -41,7 +46,7 @@ class FirstOrderFeedbackController:
         """
         self.force_pwm_gain = max(force_pwm_gain, 0.01)
 
-    def control(self, desired_force, estimated_force):
+    def control(self, error):
         """
         Control loop to compute the pwm(%) to send to motors
         to acheive a desired force.
@@ -51,6 +56,6 @@ class FirstOrderFeedbackController:
 
         Returns: The derivative of pwm(%) to send to motors
         """
-        error = (estimated_force - desired_force)
-        pwm_out = -(self.user_pwm_gain / self.force_pwm_gain) * (error)
-        return pwm_out
+        pwm = -(self.integral_pwm_gain / self.force_pwm_gain) * (error) * (self.dt)
+        self.integral_out += np.clip(pwm, -self.max_pwm_change, self.max_pwm_change)
+        return self.integral_out

@@ -78,5 +78,7 @@ plt.plot(ts, unfiltered_force, 'r')
 plt.xlabel('Time(sec)')
 plt.ylabel('Force(N)')
 plt.legend(['Filtered force', 'Unfiltered force'])
+np.savetxt("ForcevsPwm"+str(int(args.pwm))+".csv", np.array((filtered_force, unfiltered_force)).transpose(), fmt="%2.4f", delimiter=",",
+           header="Unfiltered Force, Filtered Force")
 # Wait for plot to be closed
 plt.show(block=True)

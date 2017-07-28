@@ -20,6 +20,8 @@ parser.add_argument('-f', '--freq', type=float, help='Control and sample frequen
                     default=50)
 parser.add_argument('-t', type=float, help='Time to run control loop for',
                     default=10)
+parser.add_argument('-u', '--use_proportional', type=bool, help='Use proportional controller',
+                    default=True)
 parser.add_argument('-c', '--cutoff', type=float,
                     help='Cutoff frequency for sampling',
                     default=10)
@@ -57,7 +59,7 @@ arduino_communication = ArduinoCommunication(port=args.port,
                                              baud_rate=115200)
 
 # Control Loop
-control_loop = ControlLoop(cutoff, frequency)
+control_loop = ControlLoop(cutoff, frequency, args.use_proportional)
 
 # Low pass filter
 
