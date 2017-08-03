@@ -28,7 +28,7 @@ time_off = 0.02
 # PWM percentage to send to motors
 percentage = args.pwm
 # For how much time to run the filtering
-tf = 5.0
+tf = 1.5
 # Cutoff frequency for low pass filter
 cutoff = args.cutoff
 # Calls class with a specified frequency
