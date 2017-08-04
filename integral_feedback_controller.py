@@ -19,6 +19,8 @@ class IntegralFeedbackController:
         Constructor. Creates initial settings
 
         Parameters:
+        max_pwm_change -- The maximum pwm change in a given cycle
+        dt -- change in time over the integration
         force_pwm_gain -- The slope of steady state force vs pwm(%)
                           curve.
         integral_pwm_gain  -- The user specified gain on how quickly the
@@ -33,7 +35,9 @@ class IntegralFeedbackController:
         self.integral_pwm_gain = integral_pwm_gain
         # Initializes the integral value as zero
         self.integral_out = 0
+        # Intializes the max_pwm_change to the passed in value for the class
         self.max_pwm_change = max_pwm_change        
+        # Intializes the dt to the passed in value for the class
         self.dt = dt        
 
     def setForcePWMGain(self, force_pwm_gain):
@@ -48,14 +52,15 @@ class IntegralFeedbackController:
 
     def control(self, error):
         """
-        Control loop to compute the pwm(%) to send to motors
+        Control loop to compute the integral portion for the motors
         to acheive a desired force.
         Parameters:
-        desired_force -- Desired force to acheive
-        estimated_force -- Filtered force that is current force
+        Error -- Difference between filtered force and desired force
 
-        Returns: The derivative of pwm(%) to send to motors
+        Returns: The pwm(%) to send to motors
         """
+        # Computes PWM from the error
         pwm = -(self.integral_pwm_gain / self.force_pwm_gain) * (error) * (self.dt)
+        # Clips the integral value between the max and min pwm values
         self.integral_out += np.clip(pwm, -self.max_pwm_change, self.max_pwm_change)
         return self.integral_out
